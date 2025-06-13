@@ -15,6 +15,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final emailController = TextEditingController();
   final senhaController = TextEditingController();
   bool carregando = false;
+  bool _showPassword = false; // controla a visibilidade da senha
 
   final _auth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
@@ -62,216 +63,182 @@ class _RegisterPageState extends State<RegisterPage> {
     final isWide = MediaQuery.of(context).size.width > 600;
 
     return Scaffold(
-      body: AnimatedContainer(
-        duration: const Duration(seconds: 5),
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Color(0xFFFB8C00), // laranja forte
-              Color(0xFFFFA726), // laranja claro
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Center(
-          child: SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 420),
-              child: Container(
-                padding: const EdgeInsets.all(32),
-                margin: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.95),
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
-                      blurRadius: 18,
-                      offset: const Offset(0, 8),
+      backgroundColor: Colors.black,
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.grey[900],
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black54,
+                    blurRadius: 12,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Ícone topo
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Container(
+                        width: 80,
+                        height: 80,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.deepOrangeAccent,
+                        ),
+                      ),
+                      const Icon(
+                        Icons.person_add_alt_1,
+                        size: 40,
+                        color: Colors.white,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Crie sua conta',
+                    style: TextStyle(
+                      fontSize: isWide ? 28 : 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Ícone com fundo circular laranja
-                    Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFFFFA726), Color(0xFFFB8C00)],
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 32),
+
+                  // Nome
+                  TextField(
+                    controller: nomeController,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      labelText: 'Nome completo',
+                      labelStyle: const TextStyle(color: Colors.white70),
+                      filled: true,
+                      fillColor: Colors.grey[800],
+                      prefixIcon: const Icon(
+                        Icons.person,
+                        color: Colors.white70,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // E-mail
+                  TextField(
+                    controller: emailController,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      labelText: 'E-mail',
+                      labelStyle: const TextStyle(color: Colors.white70),
+                      filled: true,
+                      fillColor: Colors.grey[800],
+                      prefixIcon: const Icon(
+                        Icons.email,
+                        color: Colors.white70,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Senha
+                  TextField(
+                    controller: senhaController,
+                    obscureText: !_showPassword,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      labelText: 'Senha',
+                      labelStyle: const TextStyle(color: Colors.white70),
+                      filled: true,
+                      fillColor: Colors.grey[800],
+                      prefixIcon: const Icon(Icons.lock, color: Colors.white70),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _showPassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          color: Colors.white70,
+                        ),
+                        onPressed: () => setState(() {
+                          _showPassword = !_showPassword;
+                        }),
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Botão Cadastrar
+                  ElevatedButton(
+                    onPressed: carregando ? null : register,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.deepOrangeAccent,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: carregando
+                        ? const SizedBox(
+                            height: 24,
+                            width: 24,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Text(
+                            'Cadastrar',
+                            style: TextStyle(fontSize: 16, color: Colors.white),
+                          ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (_) => const LoginPage()),
+                      );
+                    },
+                    child: const Text.rich(
+                      TextSpan(
+                        text: 'Já tem uma conta? ',
+                        style: TextStyle(color: Colors.white70),
+                        children: [
+                          TextSpan(
+                            text: 'Entrar',
+                            style: TextStyle(
+                              color: Colors.deepOrangeAccent,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                        ),
-                        const Icon(
-                          Icons.person_add_alt_1,
-                          size: 40,
-                          color: Colors.white,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-                    Text(
-                      'Crie sua conta',
-                      style: TextStyle(
-                        fontSize: isWide ? 28 : 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                        ],
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 32),
-
-                    // Nome
-                    TextField(
-                      controller: nomeController,
-                      style: const TextStyle(color: Colors.black),
-                      decoration: InputDecoration(
-                        labelText: 'Nome completo',
-                        labelStyle: const TextStyle(color: Colors.black54),
-                        prefixIcon: const Icon(
-                          Icons.person,
-                          color: Color(0xFFFB8C00),
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(
-                            color: Color(0xFFFB8C00),
-                          ),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          vertical: 12,
-                          horizontal: 12,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // E-mail
-                    TextField(
-                      controller: emailController,
-                      style: const TextStyle(color: Colors.black),
-                      decoration: InputDecoration(
-                        labelText: 'E-mail',
-                        labelStyle: const TextStyle(color: Colors.black54),
-                        prefixIcon: const Icon(
-                          Icons.email,
-                          color: Color(0xFFFB8C00),
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(
-                            color: Color(0xFFFB8C00),
-                          ),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          vertical: 12,
-                          horizontal: 12,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Senha
-                    TextField(
-                      controller: senhaController,
-                      obscureText: true,
-                      style: const TextStyle(color: Colors.black),
-                      decoration: InputDecoration(
-                        labelText: 'Senha',
-                        labelStyle: const TextStyle(color: Colors.black54),
-                        prefixIcon: const Icon(
-                          Icons.lock,
-                          color: Color(0xFFFB8C00),
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(
-                            color: Color(0xFFFB8C00),
-                          ),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          vertical: 12,
-                          horizontal: 12,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Botão Cadastrar
-                    ElevatedButton(
-                      onPressed: carregando ? null : register,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFFB8C00),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        elevation: 6,
-                      ),
-                      child: carregando
-                          ? const SizedBox(
-                              height: 24,
-                              width: 24,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
-                              ),
-                            )
-                          : const Text(
-                              "Cadastrar",
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.white,
-                              ),
-                            ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Link para Entrar
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (_) => const LoginPage()),
-                        );
-                      },
-                      child: const Text.rich(
-                        TextSpan(
-                          text: "Já tem uma conta? ",
-                          style: TextStyle(color: Colors.black87),
-                          children: [
-                            TextSpan(
-                              text: "Entrar",
-                              style: TextStyle(
-                                color: Color(0xFFFB8C00),
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),

@@ -17,6 +17,7 @@ class _LoginPageState extends State<LoginPage> {
   final emailController = TextEditingController();
   final senhaController = TextEditingController();
   bool lembrar = false;
+  bool _showPassword = false;
 
   final _auth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
@@ -27,16 +28,13 @@ class _LoginPageState extends State<LoginPage> {
         email: emailController.text.trim(),
         password: senhaController.text.trim(),
       );
-
       final doc = await _firestore
           .collection('users')
           .doc(cred.user!.uid)
           .get();
       if (!doc.exists) throw Exception("Usuário não encontrado no Firestore.");
       final appUser = AppUser.fromMap(doc.id, doc.data()!);
-
       if (!mounted) return;
-
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -47,7 +45,7 @@ class _LoginPageState extends State<LoginPage> {
     } catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Erro: $e')));
+      ).showSnackBar(SnackBar(content: Text('Erro: \$e')));
     }
   }
 
@@ -61,20 +59,12 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       body: Stack(
         children: [
-          // 1) Imagem de fundo
           Positioned.fill(
-            child: Image.asset(
-              'assets/strong-man.jpg', // <-- nome + extensão correta
-              fit: BoxFit.cover,
-            ),
+            child: Image.asset('assets/strong-man.jpg', fit: BoxFit.cover),
           ),
-
-          // 2) Overlay escuro
           Positioned.fill(
             child: Container(color: Colors.black.withOpacity(0.6)),
           ),
-
-          // 3) Formulário num Card escuro
           Center(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -88,21 +78,22 @@ class _LoginPageState extends State<LoginPage> {
                     BoxShadow(
                       color: Colors.black54,
                       blurRadius: 12,
-                      offset: Offset(0, 6),
+                      offset: const Offset(0, 6),
                     ),
                   ],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Opicional: placeholder para logo ou thumb
                     SizedBox(
                       height: 150,
-                      child: Image.asset('assets/gym_logo.png'),
+                      child: Image.asset(
+                        'assets/gym_logo.png',
+                        fit: BoxFit.contain,
+                      ),
                     ),
                     const SizedBox(height: 16),
-
-                    Text(
+                    const Text(
                       'Acesse sua conta',
                       style: TextStyle(
                         color: Colors.white,
@@ -112,23 +103,23 @@ class _LoginPageState extends State<LoginPage> {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 8),
-
-                    Text(
+                    const Text(
                       'Faça login para aproveitar todos os recursos.',
                       style: TextStyle(color: Colors.white70, fontSize: 14),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 24),
 
-                    // Email
+                    // Email com label flutuante
                     TextField(
                       controller: emailController,
                       style: const TextStyle(color: Colors.white),
                       decoration: InputDecoration(
+                        labelText: 'E-mail',
+                        labelStyle: const TextStyle(color: Colors.white70),
+                        floatingLabelStyle: const TextStyle(color: Colors.grey),
                         filled: true,
                         fillColor: Colors.grey[800],
-                        hintText: 'E-mail',
-                        hintStyle: TextStyle(color: Colors.white54),
                         prefixIcon: const Icon(
                           Icons.email,
                           color: Colors.white70,
@@ -141,28 +132,31 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(height: 16),
 
-                    // Senha
+                    // Senha com toggle e label flutuante
                     TextField(
                       controller: senhaController,
-                      obscureText: true,
+                      obscureText: !_showPassword,
                       style: const TextStyle(color: Colors.white),
                       decoration: InputDecoration(
+                        labelText: 'Senha',
+                        labelStyle: const TextStyle(color: Colors.white70),
+                        floatingLabelStyle: const TextStyle(color: Colors.grey),
                         filled: true,
                         fillColor: Colors.grey[800],
-                        hintText: 'Senha',
-                        hintStyle: TextStyle(color: Colors.white54),
                         prefixIcon: const Icon(
                           Icons.lock,
                           color: Colors.white70,
                         ),
                         suffixIcon: IconButton(
-                          icon: const Icon(
-                            Icons.visibility,
+                          icon: Icon(
+                            _showPassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
                             color: Colors.white70,
                           ),
-                          onPressed: () {
-                            // togglar obscureText
-                          },
+                          onPressed: () => setState(() {
+                            _showPassword = !_showPassword;
+                          }),
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -184,7 +178,6 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(height: 16),
 
-                    // Botão de login laranja
                     ElevatedButton(
                       onPressed: login,
                       style: ElevatedButton.styleFrom(
@@ -208,11 +201,11 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       child: const Text.rich(
                         TextSpan(
-                          text: "Ainda não tem uma conta? ",
+                          text: 'Ainda não tem uma conta? ',
                           style: TextStyle(color: Colors.white70),
                           children: [
                             TextSpan(
-                              text: "Cadastrar",
+                              text: 'Cadastrar',
                               style: TextStyle(
                                 color: Colors.deepOrangeAccent,
                                 fontWeight: FontWeight.bold,
@@ -264,11 +257,9 @@ class _EsqueciSenhaDialogState extends State<EsqueciSenhaDialog> {
       backgroundColor: Colors.transparent,
       insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(
-          maxWidth: 500, // largura aumentada
-        ),
+        constraints: const BoxConstraints(maxWidth: 500),
         child: Container(
-          padding: const EdgeInsets.all(24), // padding aumentado
+          padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
             color: Colors.grey[900],
             borderRadius: BorderRadius.circular(16),
@@ -284,11 +275,10 @@ class _EsqueciSenhaDialogState extends State<EsqueciSenhaDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Ícone no topo
               Align(
                 alignment: Alignment.center,
                 child: Container(
-                  width: 64, // tamanho maior
+                  width: 64,
                   height: 64,
                   decoration: const BoxDecoration(
                     color: Colors.deepOrangeAccent,
@@ -303,11 +293,11 @@ class _EsqueciSenhaDialogState extends State<EsqueciSenhaDialog> {
               ),
 
               const SizedBox(height: 16),
-              Text(
+              const Text(
                 'Redefinir senha',
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 20, // fonte maior
+                style: TextStyle(
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
@@ -320,10 +310,16 @@ class _EsqueciSenhaDialogState extends State<EsqueciSenhaDialog> {
                   maxLength: 150,
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
+                    counterText: '',
+                    labelText: 'Seu e-mail', // rótulo flutuante
+                    labelStyle: const TextStyle(
+                      color: Colors.white70,
+                    ), // cor do label
+                    floatingLabelStyle: const TextStyle(
+                      color: Colors.grey,
+                    ), // cor ao flutuar
                     filled: true,
                     fillColor: Colors.grey[800],
-                    hintText: 'Seu e-mail',
-                    hintStyle: const TextStyle(color: Colors.white54),
                     prefixIcon: const Icon(Icons.email, color: Colors.white70),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -341,7 +337,7 @@ class _EsqueciSenhaDialogState extends State<EsqueciSenhaDialog> {
                   ),
                 ),
 
-              const SizedBox(height: 24), // espaço aumentado
+              const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
